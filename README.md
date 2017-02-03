@@ -1,5 +1,5 @@
-Role Name
-=========
+rbicker.icinga2node
+===================
 
 Installs an icinga2 node including key exchange and does basic configuration according to the variables.
 
