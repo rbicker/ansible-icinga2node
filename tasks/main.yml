@@ -1,71 +1,9 @@
 ---
 # tasks file for rbicker.icinga2node
 
-- name: ensure epel-release is installed
-  yum:
-    name: epel-release
-    state: present
+- include: "linux.yml"
+  when: (ansible_os_family == "RedHat")
+        # or (ansible_os_family == "Debian")
 
-- name: ensure icinga2 is installed
-  yum:
-    name: icinga2
-    state: present
-
-- name: ensure /etc/icinga2/pki directory is present
-  file:
-    path: /etc/icinga2/pki
-    state: directory
-    owner: icinga
-    group: icinga
-
-- name: check if pki key already exists
-  stat:
-    path: /etc/icinga2/pki/{{ ansible_nodename }}.key
-  register: icinga2_pki_keyfile
-
-- name: icinga2 pki ticket generation on keyserver
-  command: icinga2 pki ticket --cn "{{ ansible_nodename }}"
-  delegate_to: "{{ icinga2_keyserver  }}"
-  register: icinga2_pki_ticket
-  when: not icinga2_pki_keyfile.stat.exists
-
-- name: icinga2 pki new-cert
-  command: icinga2 pki new-cert --cn {{ ansible_nodename }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt
-  when: not icinga2_pki_keyfile.stat.exists
-
-
-- name: icinga2 pki save-cert
-  command: icinga2 pki save-cert --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --host {{icinga2_master_host }}
-  when: not icinga2_pki_keyfile.stat.exists
-
-- name: icinga2 pki request
-  command: icinga2 pki --host {{ icinga2_master_host }} --port {{ icinga2_master_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key
-  when: not icinga2_pki_keyfile.stat.exists
-
-- name: icinga2 node setup
-  command: icinga2 node setup --endpoint {{ icinga2_master_endpoint }} --master_host {{ icinga2_master_host }},{{ icinga2_master_port }} --trustedcert /etc/icinga2/pki/trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_master_zone }} --accept-config --accept-commands
-  when: not icinga2_pki_keyfile.stat.exists
-
-- name: ensure icinga2.conf corresponds to template
-  template: 
-    src: icinga2.conf.j2
-    dest: /etc/icinga2/icinga2.conf
-    owner: icinga
-    group: icinga
-    backup: yes
-  register: icinga2_config
-
-- name: ensure zones.conf corresponds to template
-  template: 
-    src: zones.conf.j2
-    dest: /etc/icinga2/zones.conf
-    owner: icinga
-    group: icinga
-    backup: yes
-  register: icinga2_zones
-
-- name: ensure icinga2 deamon is restarted after changes to the config have been applied
-  service:
-    name: icinga2
-    state: restarted
-  when: (icinga2_config.changed) or (icinga2_zones.changed)
+- include: "windows.yml"
+  when: (ansible_os_family == "Windows")

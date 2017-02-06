@@ -1,6 +1,7 @@
 ---
 # defaults file for rbicker.icinga2node
-icinga2_keyserver: localhost
+icinga2_caserver: localhost
 icinga2_master_port: 5665
 icinga2_master_zone: master
 icinga2_global_zone: global-templates
+icinga2_local_conf: true

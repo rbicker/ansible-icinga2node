@@ -1,0 +1,57 @@
+---
+# tasks for windows hosts
+
+- name: ensure icinga2 is installed (using chocolatey)
+  win_chocolatey:
+    name: icinga2
+  register: icinga2_win_install
+  
+- name: icinga2 pki ticket generation on keyserver
+  command: icinga2 pki ticket --cn "{{ ansible_nodename }}"
+  delegate_to: "{{ icinga2_caserver  }}"
+  register: icinga2_pki_ticket
+  when: icinga2_win_install.changed
+
+- name: icinga2 pki new-cert
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki new-cert --cn {{ ansible_nodename }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert  {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt"
+  args:
+    executable: cmd
+  when: icinga2_win_install.changed
+
+- name: icinga2 pki save-cert
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki save-cert --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --host {{icinga2_master_host }}"
+  args:
+    executable: cmd
+  when: icinga2_win_install.changed
+
+- name: icinga2 pki request
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ ansible_nodename }} --host {{ icinga2_master_host }} --port {{ icinga2_master_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
+  args:
+    executable: cmd
+  when: icinga2_win_install.changed
+
+- name: icinga2 node setup
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" node setup --cn {{ ansible_nodename }} --endpoint {{ icinga2_master_endpoint }} --master_host {{ icinga2_master_host }},{{ icinga2_master_port }} --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_master_zone }} --accept-config --accept-commands"
+  args:
+    executable: cmd
+  when: icinga2_win_install.changed
+
+- name: ensure icinga2.conf corresponds to template
+  win_template:
+    src: icinga2.conf.j2
+    dest: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\icinga2.conf"
+    backup: yes
+  register: icinga2_config
+
+- name: ensure zones.conf corresponds to template
+  win_template:
+    src: zones.conf.j2
+    dest: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\zones.conf"
+    backup: yes
+  register: icinga2_zones
+
+- name: ensure icinga2 deamon is restarted after changes to the config have been applied
+  win_service:
+    name: icinga2
+    state: restarted
+  when: (icinga2_config.changed) or (icinga2_zones.changed)
