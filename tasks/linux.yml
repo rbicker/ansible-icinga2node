@@ -36,15 +36,15 @@
 
 
 - name: icinga2 pki save-cert
-  command: icinga2 pki save-cert --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --host {{icinga2_master_host }}
+  command: icinga2 pki save-cert --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --host {{icinga2_parent_host }}
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: icinga2 pki request
-  command: icinga2 pki --host {{ icinga2_master_host }} --port {{ icinga2_master_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key
+  command: icinga2 pki --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: icinga2 node setup
-  command: icinga2 node setup --endpoint {{ icinga2_master_endpoint }} --master_host {{ icinga2_master_host }},{{ icinga2_master_port }} --trustedcert /etc/icinga2/pki/trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_master_zone }} --accept-config --accept-commands
+  command: icinga2 node setup --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert /etc/icinga2/pki/trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: ensure icinga2.conf corresponds to template

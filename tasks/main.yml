@@ -7,3 +7,22 @@
 
 - include: "windows.yml"
   when: (ansible_os_family == "Windows")
+
+- name: ensure {{ icinga2_dir_endpoint }} directory is present
+  file:
+    path: "{{ icinga2_dir_endpoint }}"
+    state: directory
+    owner: icinga
+    group: icinga
+  delegate_to: "{{ icinga2_configserver  }}"
+  when: icinga2_conf_endpoint
+
+- name: ensure {{ icinga2_dir_endpoint }}/{{ ansible_nodename }}.conf corresponds to template
+  template: 
+    src: endpoint.conf.j2
+    dest: "{{ icinga2_dir_endpoint }}/{{ ansible_nodename }}.conf"
+    owner: icinga
+    group: icinga
+    backup: yes
+  delegate_to: "{{ icinga2_configserver  }}"
+  when: icinga2_conf_endpoint

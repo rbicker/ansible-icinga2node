@@ -1,0 +1,6 @@
+object Endpoint "{{ ansible_nodename }}" { }
+
+object Zone "{{ ansible_nodename }}" {
+        endpoints               = [ "{{ ansible_nodename }}" ]
+        parent                  = "{{ icinga2_parent_zone }}"
+}

@@ -19,19 +19,19 @@
   when: icinga2_win_install.changed
 
 - name: icinga2 pki save-cert
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki save-cert --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --host {{icinga2_master_host }}"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki save-cert --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --host {{icinga2_parent_host }}"
   args:
     executable: cmd
   when: icinga2_win_install.changed
 
 - name: icinga2 pki request
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ ansible_nodename }} --host {{ icinga2_master_host }} --port {{ icinga2_master_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ ansible_nodename }} --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
   args:
     executable: cmd
   when: icinga2_win_install.changed
 
 - name: icinga2 node setup
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" node setup --cn {{ ansible_nodename }} --endpoint {{ icinga2_master_endpoint }} --master_host {{ icinga2_master_host }},{{ icinga2_master_port }} --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_master_zone }} --accept-config --accept-commands"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" node setup --cn {{ ansible_nodename }} --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands"
   args:
     executable: cmd
   when: icinga2_win_install.changed
