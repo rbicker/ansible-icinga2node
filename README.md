@@ -8,7 +8,7 @@ The following tasks are being performed:
 * optionally configure endpoint
 
 The role can also be used for a master/satellite/node setup:
-!(overview)[docs/overview.png]
+![overview](docs/overview.png)
 
 
 Requirements
