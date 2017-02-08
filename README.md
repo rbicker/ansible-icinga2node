@@ -8,7 +8,7 @@ The following tasks are being performed:
 * optionally configure endpoint
 
 The role can also be used for a master/satellite/node setup:
-![overview](doc/overview.png)
+![overview](https://raw.githubusercontent.com/rbicker/ansible-icinga2node/master/doc/overview.png)
 
 
 Requirements
