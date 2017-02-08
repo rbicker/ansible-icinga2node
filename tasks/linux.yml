@@ -11,6 +11,11 @@
     name: icinga2
     state: present
 
+- name: ensure nagios-plugins-all is installed
+  yum:
+    name: nagios-plugins-all
+    state: present
+
 - name: ensure /etc/icinga2/pki directory is present
   file:
     path: /etc/icinga2/pki
