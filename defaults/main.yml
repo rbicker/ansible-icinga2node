@@ -4,8 +4,18 @@ icinga2_caserver: localhost
 icinga2_configserver: localhost
 icinga2_parent_port: 5665
 icinga2_parent_zone: master
+icinga2_parent_endpoint: "{{ icinga2_parent_zone }}"
 icinga2_global_zone: global-templates
 icinga2_local_conf: true
-icinga2_endpoint: true
+icinga2_endpoint_add: true
 icinga2_endpoint_dir: /etc/icinga2/conf.d/endpoints
 icinga2_endpoint_file: "{{ ansible_nodename }}.conf" 
+icinga2_host_add: true
+icinga2_host_replace: false
+icinga2_host_objectname: "{{ ansible_nodename }}"
+icinga2_host_dir: /etc/icinga2/conf.d/hosts
+icinga2_host_file: "{{ ansible_nodename }}.conf"
+icinga2_host_address: "{{ ansible_default_ipv4.address }}"
+icinga2_host_check_command: "ping4"
+icinga2_host_template: false
+icinga2_reload_server_config: true

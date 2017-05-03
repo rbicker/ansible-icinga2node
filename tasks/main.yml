@@ -14,18 +14,43 @@
     state: directory
     owner: icinga
     group: icinga
-  delegate_to: "{{ icinga2_configserver  }}"
+  delegate_to: "{{ icinga2_configserver }}"
   when: icinga2_endpoint_add
 
 - name: "ensure enpoint configuration exists in {{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
-    blockinfile:
-      path: "{{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
-      create: yes
-      marker: "// ansible {{ ansible_nodename }} {{ mark }}"
-      block: |
-        object Endpoint "{{ ansible_nodename }}" { }
-        object Zone "{{ ansible_nodename }}" {
-          endpoints               = [ "{{ ansible_nodename }}" ]
-          parent                  = "{{ icinga2_parent_zone }}"
-        }
-    when: icinga2_endpoint_add
+  blockinfile:
+    name: "{{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
+    create: yes
+    owner: icinga
+    group: icinga
+    marker: "// ansible {{ ansible_nodename }} {mark}"
+    block: |
+      object Endpoint "{{ ansible_nodename }}" { }
+      object Zone "{{ ansible_nodename }}" {
+        endpoints               = [ "{{ ansible_nodename }}" ]
+        parent                  = "{{ icinga2_parent_zone }}"
+      }
+  delegate_to: "{{ icinga2_configserver }}"
+  when: icinga2_endpoint_add
+  notify: "reload icinga2 server config"
+
+- name: "ensure {{ icinga2_host_dir }} directory is present"
+  file:
+    path: "{{ icinga2_host_dir }}"
+    state: directory
+    owner: icinga
+    group: icinga
+  delegate_to: "{{ icinga2_configserver }}"
+  when: icinga2_host_add
+
+- name: "ensure {{ icinga2_host_dir }}/{{ icinga2_host_file }} corresponds to template"
+  template:
+    force: "{{ icinga2_host_replace}}"
+    src: host.conf.j2
+    dest: "{{ icinga2_host_dir }}/{{ icinga2_host_file }}"
+    owner: icinga
+    group: icinga
+  delegate_to: "{{ icinga2_configserver }}"
+  when: icinga2_host_add
+  notify: "reload icinga2 server config"
+

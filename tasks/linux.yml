@@ -1,6 +1,10 @@
 ---
 # tasks for linux hosts
 
+- name: ensure icinga2 repository is installed
+  yum:
+    name: https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
+
 - name: ensure epel-release is installed
   yum:
     name: epel-release
@@ -9,6 +13,7 @@
 - name: ensure icinga2 is installed
   yum:
     name: icinga2
+    disable_gpg_check: yes
     state: present
 
 - name: ensure nagios-plugins-all is installed

@@ -1,0 +1,11 @@
+object Host "{{ icinga2_host_objectname }}" {
+{% if icinga2_host_template  %}
+	import "{{ icinga2_host_template }}"
+{% endif %}
+{% if icinga2_host_check_command  %}
+	check_command = "{{ icinga2_host_check_command }}"
+{% endif %}
+{% if icinga2_host_address %}
+        address = "{{ icinga2_host_address }}"
+{% endif %}
+}
