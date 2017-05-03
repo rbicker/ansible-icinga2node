@@ -28,8 +28,9 @@ icinga2_parent_zone: master #name of the parent zone (default=master)
 icinga2_parent_endpoint: master.mydomain.local #object name of endpoint
 icinga2_global_zone: global-templates #if set, the global zone will be configured (default=global-tempates)
 icinga2_local_conf: true #if true, local configurations on the node will be loaded (default=true)
-icinga2_conf_endpoint: true #if true, configure an endpoint for the node on the configserver (default=true)
-icinga2_dir_endpoint: /etc/icinga2/conf.d/endpoints #endpoint directory path on the configserver (default=/etc/icinga2/conf.d/endpoints)
+icinga2_endpoint_add: true #if true, configure an endpoint for the node on the configserver (default=true)
+icinga2_endpoint_dir: /etc/icinga2/conf.d/endpoints #endpoint directory path on the configserver (default=/etc/icinga2/conf.d/endpoints)
+icinga2_endpoint_file: endpoints.conf #file containing endpoint configuration (default={{ ansible_nodename }}.conf)
 ```
 
 Dependencies

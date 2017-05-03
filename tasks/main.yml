@@ -8,21 +8,24 @@
 - include: "windows.yml"
   when: (ansible_os_family == "Windows")
 
-- name: ensure {{ icinga2_dir_endpoint }} directory is present
+- name: "ensure {{ icinga2_endpoint_dir }} directory is present"
   file:
-    path: "{{ icinga2_dir_endpoint }}"
+    path: "{{ icinga2_endpoint_dir }}"
     state: directory
     owner: icinga
     group: icinga
   delegate_to: "{{ icinga2_configserver  }}"
-  when: icinga2_conf_endpoint
+  when: icinga2_endpoint_add
 
-- name: ensure {{ icinga2_dir_endpoint }}/{{ ansible_nodename }}.conf corresponds to template
-  template: 
-    src: endpoint.conf.j2
-    dest: "{{ icinga2_dir_endpoint }}/{{ ansible_nodename }}.conf"
-    owner: icinga
-    group: icinga
-    backup: yes
-  delegate_to: "{{ icinga2_configserver  }}"
-  when: icinga2_conf_endpoint
+- name: "ensure enpoint configuration exists in {{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
+    blockinfile:
+      path: "{{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
+      create: yes
+      marker: "// ansible {{ ansible_nodename }} {{ mark }}"
+      block: |
+        object Endpoint "{{ ansible_nodename }}" { }
+        object Zone "{{ ansible_nodename }}" {
+          endpoints               = [ "{{ ansible_nodename }}" ]
+          parent                  = "{{ icinga2_parent_zone }}"
+        }
+    when: icinga2_endpoint_add

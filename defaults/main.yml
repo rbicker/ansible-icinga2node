@@ -6,5 +6,6 @@ icinga2_parent_port: 5665
 icinga2_parent_zone: master
 icinga2_global_zone: global-templates
 icinga2_local_conf: true
-icinga2_conf_endpoint: true
-icinga2_dir_endpoint: /etc/icinga2/conf.d/endpoints
+icinga2_endpoint: true
+icinga2_endpoint_dir: /etc/icinga2/conf.d/endpoints
+icinga2_endpoint_file: "{{ ansible_nodename }}.conf" 
