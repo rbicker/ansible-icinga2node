@@ -1,6 +1,27 @@
 ---
 # tasks file for rbicker.icinga2node
 
+- name: "get /var/lib/icinga2/ca/ca.crt contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/ca.crt
+  register: ca_crt
+  delegate_to: "{{ icinga2_caserver }}"
+  when: icinga2_node_sync_ca
+
+- name: "get /var/lib/icinga2/ca/ca.key contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/ca.key
+  register: ca_key
+  delegate_to: "{{ icinga2_caserver  }}"
+  when: icinga2_node_sync_ca
+
+- name: "get /var/lib/icinga2/ca/serial.txt contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/serial.txt
+  register: ca_serial
+  delegate_to: "{{ icinga2_caserver  }}"
+  when: icinga2_node_sync_ca
+
 - include: "linux.yml"
   when: (ansible_os_family == "RedHat")
         # or (ansible_os_family == "Debian")
@@ -8,49 +29,49 @@
 - include: "windows.yml"
   when: (ansible_os_family == "Windows")
 
-- name: "ensure {{ icinga2_endpoint_dir }} directory is present"
+- name: "ensure {{ icinga2_cs_endpoint_dir }} directory is present"
   file:
-    path: "{{ icinga2_endpoint_dir }}"
+    path: "{{ icinga2_cs_endpoint_dir }}"
     state: directory
     owner: icinga
     group: icinga
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_endpoint_add
+  when: icinga2_cs_endpoint_add
 
-- name: "ensure enpoint configuration exists in {{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
+- name: "ensure enpoint configuration exists on {{ icinga2_configserver }} in {{ icinga2_cs_endpoint_dir }}/{{ icinga2_cs_endpoint_file }}"
   blockinfile:
-    name: "{{ icinga2_endpoint_dir }}/{{ icinga2_endpoint_file }}"
+    name: "{{ icinga2_cs_endpoint_dir }}/{{ icinga2_cs_endpoint_file }}"
     create: yes
     owner: icinga
     group: icinga
-    marker: "// ansible {{ ansible_nodename }} {mark}"
+    marker: "// ansible {{ icinga2_node_endpoint }} {mark}"
     block: |
-      object Endpoint "{{ ansible_nodename }}" { }
-      object Zone "{{ ansible_nodename }}" {
-        endpoints               = [ "{{ ansible_nodename }}" ]
+      object Endpoint "{{ icinga2_node_endpoint }}" { }
+      object Zone "{{ icinga2_node_zone }}" {
+        endpoints               = [ "{{ icinga2_node_endpoint }}" ]
         parent                  = "{{ icinga2_parent_zone }}"
       }
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_endpoint_add
+  when: icinga2_cs_endpoint_add
   notify: "reload icinga2 server config"
 
-- name: "ensure {{ icinga2_host_dir }} directory is present"
+- name: "ensure {{ icinga2_cs_host_dir }} directory is present on {{ icinga2_configserver }}"
   file:
-    path: "{{ icinga2_host_dir }}"
+    path: "{{ icinga2_cs_host_dir }}"
     state: directory
     owner: icinga
     group: icinga
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_host_add
+  when: icinga2_cs_host_add
 
-- name: "ensure {{ icinga2_host_dir }}/{{ icinga2_host_file }} corresponds to template"
+- name: "ensure {{ icinga2_cs_host_dir }}/{{ icinga2_cs_host_file }} corresponds to template on {{ icinga2_configserver }}"
   template:
-    force: "{{ icinga2_host_replace}}"
+    force: "{{ icinga2_cs_host_replace}}"
     src: host.conf.j2
-    dest: "{{ icinga2_host_dir }}/{{ icinga2_host_file }}"
+    dest: "{{ icinga2_cs_host_dir }}/{{ icinga2_cs_host_file }}"
     owner: icinga
     group: icinga
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_host_add
+  when: icinga2_cs_host_add
   notify: "reload icinga2 server config"
 

@@ -1,11 +1,28 @@
-object Host "{{ icinga2_host_objectname }}" {
-{% if icinga2_host_template  %}
-	import "{{ icinga2_host_template }}"
+object Host "{{ icinga2_cs_host_objectname }}" {
+{% if icinga2_cs_host_template  is defined %}
+  import "{{ icinga2_cs_host_template }}"
 {% endif %}
-{% if icinga2_host_check_command  %}
-	check_command = "{{ icinga2_host_check_command }}"
+{% if icinga2_cs_host_display_name is defined %}
+  display_name = "{{ icinga2_display_name }}"
 {% endif %}
-{% if icinga2_host_address %}
-        address = "{{ icinga2_host_address }}"
+{% if icinga2_cs_host_notes is defined %}
+  notes = "{{ icinga2_display_name }}"
+{% endif %}
+{% if icinga2_cs_host_check_command is defined %}
+  check_command = "{{ icinga2_cs_host_check_command }}"
+{% endif %}
+{% if icinga2_cs_host_address is defined %}
+  address = "{{ icinga2_cs_host_address }}"
+{% endif %}
+{% if icinga2_cs_host_address6 is defined %}
+  address6 = "{{ icinga2_cs_host_address6 }}"
+{% endif %}
+{% if icinga2_cs_host_vars is defined %}
+{% for key in icinga2_cs_host_vars %}
+  vars.{{ key }} = {{ icinga2_cs_host_vars[key] }} 
+{% endfor %}
+{% endif %}
+{% if icinga2_cs_host_custom_block is defined %}
+{{ icinga2_cs_host_custom_block }}
 {% endif %}
 }

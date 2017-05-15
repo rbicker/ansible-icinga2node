@@ -3,7 +3,7 @@
 
 - name: ensure icinga2 repository is installed
   yum:
-    name: https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
+    name: "{{ icinga2_repo_url }}"
 
 - name: ensure epel-release is installed
   yum:
@@ -16,10 +16,79 @@
     disable_gpg_check: yes
     state: present
 
+- name: ensure icinga2 service is enabled
+  service:
+    name: icinga2
+    enabled: true
+
 - name: ensure nagios-plugins-all is installed
   yum:
     name: nagios-plugins-all
     state: present
+
+- name: ensure /usr/lib64/nagios/plugins/* is owned by icinga:icinga
+  file:
+    path: /usr/lib64/nagios/plugins
+    owner: icinga
+    group: icinga
+    state: directory
+    recurse: true
+
+- name: ensure directory /var/lib/icinga2/ca is present
+  file:
+    path: /var/lib/icinga2/ca
+    state: directory
+    owner: icinga
+    group: icinga
+  when: icinga2_node_sync_ca
+
+- name: "get /var/lib/icinga2/ca/ca.crt contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/ca.crt
+  register: ca_crt
+  delegate_to: "{{ icinga2_caserver }}"
+  when: icinga2_node_sync_ca
+
+- name: "get /var/lib/icinga2/ca/ca.key contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/ca.key
+  register: ca_key
+  delegate_to: "{{ icinga2_caserver  }}"
+  when: icinga2_node_sync_ca
+
+- name: "get /var/lib/icinga2/ca/serial.txt contents from {{ icinga2_caserver }}"
+  slurp:
+    src: /var/lib/icinga2/ca/serial.txt
+  register: ca_serial
+  delegate_to: "{{ icinga2_caserver  }}"
+  when: icinga2_node_sync_ca
+
+- name: ensure /var/lib/icinga2/ca/ca.crt is in sync
+  copy:
+    content: "{{ ca_crt['content'] | b64decode }}"
+    dest: /var/lib/icinga2/ca/ca.crt
+    owner: icinga
+    group: icinga
+    mode: 0644
+  when: icinga2_node_sync_ca
+
+- name: ensure /var/lib/icinga2/ca/ca.key is in sync
+  copy:
+    content: "{{ ca_key['content'] | b64decode }}"
+    dest: /var/lib/icinga2/ca/ca.key
+    owner: icinga
+    group: icinga
+    mode: 0600
+  when: icinga2_node_sync_ca
+
+- name: ensure /var/lib/icinga2/ca/serial.txt is in sync
+  copy:
+    content: "{{ ca_serial['content'] | b64decode }}"
+    dest: /var/lib/icinga2/ca/serial.txt
+    owner: icinga
+    group: icinga
+    mode: 0644
+  when: icinga2_node_sync_ca
 
 - name: ensure /etc/icinga2/pki directory is present
   file:
@@ -30,53 +99,73 @@
 
 - name: check if pki key already exists
   stat:
-    path: /etc/icinga2/pki/{{ ansible_nodename }}.key
+    path: "/etc/icinga2/pki/{{ icinga2_node_endpoint }}.key"
   register: icinga2_pki_keyfile
 
-
 - name: icinga2 pki ticket generation on keyserver
-  command: icinga2 pki ticket --cn "{{ ansible_nodename }}"
+  command: "icinga2 pki ticket --cn {{ icinga2_node_endpoint }}"
   delegate_to: "{{ icinga2_caserver  }}"
   register: icinga2_pki_ticket
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: icinga2 pki new-cert
-  command: icinga2 pki new-cert --cn {{ ansible_nodename }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt
+  command: "icinga2 pki new-cert --cn {{ icinga2_node_endpoint }} --key /etc/icinga2/pki/{{ icinga2_node_endpoint }}.key --cert /etc/icinga2/pki/{{ icinga2_node_endpoint }}.crt"
   when: not icinga2_pki_keyfile.stat.exists
 
-
 - name: icinga2 pki save-cert
-  command: icinga2 pki save-cert --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --host {{icinga2_parent_host }}
+  command: "icinga2 pki save-cert --key /etc/icinga2/pki/{{ icinga2_node_endpoint }}.key --cert /etc/icinga2/pki/{{ icinga2_node_endpoint }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --host {{icinga2_parent_host }}"
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: icinga2 pki request
-  command: icinga2 pki --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key /etc/icinga2/pki/{{ ansible_nodename }}.key --cert /etc/icinga2/pki/{{ ansible_nodename }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key
+  command: "icinga2 pki --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key /etc/icinga2/pki/{{ icinga2_node_endpoint }}.key --cert /etc/icinga2/pki/{{ icinga2_node_endpoint }}.crt --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key"
   when: not icinga2_pki_keyfile.stat.exists
 
 - name: icinga2 node setup
-  command: icinga2 node setup --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert /etc/icinga2/pki/trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands
+  command: "icinga2 node setup --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert /etc/icinga2/pki/trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands"
   when: not icinga2_pki_keyfile.stat.exists
 
+- name: ensure icinga2 features are enabled
+  file:
+    src: "/etc/icinga2/features-available/{{ item }}.conf"
+    dest: "/etc/icinga2/features-enabled/{{ item }}.conf" 
+    owner: icinga
+    group: icinga
+    state: link
+  with_items: "{{ icinga2_node_features }}"
+  notify: linux node restart icinga2 service
+
 - name: ensure icinga2.conf corresponds to template
-  template: 
+  template:
     src: icinga2.conf.j2
     dest: /etc/icinga2/icinga2.conf
     owner: icinga
     group: icinga
-    backup: yes
-  register: icinga2_config
+  notify: linux node restart icinga2 service
 
 - name: ensure zones.conf corresponds to template
-  template: 
+  template:
     src: zones.conf.j2
     dest: /etc/icinga2/zones.conf
     owner: icinga
     group: icinga
-    backup: yes
-  register: icinga2_zones
+  notify: linux node restart icinga2 service
 
-- name: ensure icinga2 deamon is restarted after changes to the config have been applied
-  service:
-    name: icinga2
-    state: restarted
-  when: (icinga2_config.changed) or (icinga2_zones.changed)
+- name: ensure NodeName constant is set
+  lineinfile:
+    regexp: "^const NodeName"
+    line: "const NodeName = \"{{ icinga2_node_endpoint }}\""
+    path: /etc/icinga2/constants.conf
+
+- name: ensure ZoneName constant is set
+  lineinfile:
+    regexp: "^const ZoneName"
+    line: "const ZoneName = \"{{ icinga2_node_zone }}\""
+    path: /etc/icinga2/constants.conf
+
+- name: ensure TicketSalt constant is set
+  lineinfile:
+    regexp: "^const TicketSalt"
+    line: "const TicketSalt = \"{{ icinga2_node_salt }}\""
+    path: /etc/icinga2/constants.conf
+  when: icinga2_node_salt is defined
+

@@ -1,16 +1,26 @@
 ---
 # handlers file for rbicker.icinga2node
 
-- name: check icinga2 config
+- name: linux node restart icinga2 service
+  service:
+    name: icinga2
+    state: restarted
+
+- name: windows node restart icinga2 service
+  win_service:
+    name: icinga2
+    state: restarted
+
+- name: cs check icinga2 config
   listen: "reload icinga2 server config"
   command: icinga2 daemon -C
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_reload_server_config
+  when: icinga2_cs_service_reload
 
-- name: reload icinga2 service
+- name: cs reload icinga2 service
   listen: "reload icinga2 server config"
   service:
     name: icinga2
     state: reloaded
   delegate_to: "{{ icinga2_configserver }}"
-  when: icinga2_reload_server_config
+  when: icinga2_cs_service_reload

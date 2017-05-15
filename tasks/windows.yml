@@ -7,51 +7,83 @@
   register: icinga2_win_install
   
 - name: icinga2 pki ticket generation on keyserver
-  command: icinga2 pki ticket --cn "{{ ansible_nodename }}"
+  command: icinga2 pki ticket --cn "{{ icinga2_node_endpoint }}"
   delegate_to: "{{ icinga2_caserver  }}"
   register: icinga2_pki_ticket
   when: icinga2_win_install.changed
 
 - name: icinga2 pki new-cert
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki new-cert --cn {{ ansible_nodename }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert  {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki new-cert --cn {{ icinga2_node_endpoint }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key --cert  {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt"
   args:
     executable: cmd
   when: icinga2_win_install.changed
 
 - name: icinga2 pki save-cert
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki save-cert --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --host {{icinga2_parent_host }}"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki save-cert --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --host {{icinga2_parent_host }}"
   args:
     executable: cmd
   when: icinga2_win_install.changed
 
 - name: icinga2 pki request
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ ansible_nodename }} --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ ansible_nodename }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ icinga2_node_endpoint }} --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
   args:
     executable: cmd
   when: icinga2_win_install.changed
 
 - name: icinga2 node setup
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" node setup --cn {{ ansible_nodename }} --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands"
+  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" node setup --cn {{ icinga2_node_endpoint }} --endpoint {{ icinga2_parent_endpoint }} --master_host {{ icinga2_parent_host }},{{ icinga2_parent_port }} --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands"
   args:
     executable: cmd
   when: icinga2_win_install.changed
+
+- name: ensure NodeName constant is set
+  win_lineinfile:
+    regexp: "^const NodeName"
+    line: "const NodeName = \"{{ icinga2_node_endpoint }}\""
+    path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\constants.conf"
+
+- name: ensure ZoneName constant is set
+  win_lineinfile:
+    regexp: "^const ZoneName"
+    line: "const ZoneName = \"{{ icinga2_node_zone }}\""
+    path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\constants.conf"
+
+- name: ensure TicketSalt constant is set
+  win_lineinfile:
+    regexp: "^const TicketSalt"
+    line: "const TicketSalt = \"{{ icinga2_node_salt }}\""
+    path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\constants.conf"
+  when: icinga2_node_salt is defined
 
 - name: ensure icinga2.conf corresponds to template
   win_template:
     src: icinga2.conf.j2
     dest: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\icinga2.conf"
     backup: yes
-  register: icinga2_config
+  notify: windows node restart icinga2 service
 
 - name: ensure zones.conf corresponds to template
   win_template:
     src: zones.conf.j2
     dest: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\zones.conf"
     backup: yes
-  register: icinga2_zones
+  notify: windows node restart icinga2 service
 
-- name: ensure icinga2 deamon is restarted after changes to the config have been applied
-  win_service:
-    name: icinga2
-    state: restarted
-  when: (icinga2_config.changed) or (icinga2_zones.changed)
+- name: ensure ca.crt is in sync
+  copy:
+    content: "{{ ca_crt['content'] | b64decode }}"
+    dest: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\ca.crt"
+  when: icinga2_node_sync_ca
+
+- name: ensure ca.key is in sync
+  copy:
+    content: "{{ ca_key['content'] | b64decode }}"
+    dest: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\ca.key"
+  when: icinga2_node_sync_ca
+
+- name: ensure serial.txt is in sync
+  copy:
+    content: "{{ ca_serial['content'] | b64decode }}"
+    dest: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\serial.txt"
+  when: icinga2_node_sync_ca
+
