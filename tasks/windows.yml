@@ -5,6 +5,8 @@
   win_chocolatey:
     name: icinga2
   register: icinga2_win_install
+  #changed_when: true
+  when: false
   
 - name: icinga2 pki ticket generation on keyserver
   command: icinga2 pki ticket --cn "{{ icinga2_node_endpoint }}"

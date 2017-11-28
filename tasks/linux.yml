@@ -3,12 +3,14 @@
 
 - name: ensure icinga2 repository is installed
   yum:
-    name: "{{ icinga2_repo_url }}"
+    name: "{{ icinga2_repo_icinga_url }}"
+  when: icinga2_repo_icinga_install
 
 - name: ensure epel-release is installed
   yum:
     name: epel-release
     state: present
+  when: icinga2_repo_epel_install
 
 - name: ensure icinga2 is installed
   yum:
@@ -42,21 +44,21 @@
     group: icinga
   when: icinga2_node_sync_ca
 
-- name: "get /var/lib/icinga2/ca/ca.crt contents from {{ icinga2_caserver }}"
+- name: get /var/lib/icinga2/ca/ca.crt contents from caserver
   slurp:
     src: /var/lib/icinga2/ca/ca.crt
   register: ca_crt
   delegate_to: "{{ icinga2_caserver }}"
   when: icinga2_node_sync_ca
 
-- name: "get /var/lib/icinga2/ca/ca.key contents from {{ icinga2_caserver }}"
+- name: get /var/lib/icinga2/ca/ca.key contents from caserver
   slurp:
     src: /var/lib/icinga2/ca/ca.key
   register: ca_key
   delegate_to: "{{ icinga2_caserver  }}"
   when: icinga2_node_sync_ca
 
-- name: "get /var/lib/icinga2/ca/serial.txt contents from {{ icinga2_caserver }}"
+- name: get /var/lib/icinga2/ca/serial.txt contents from icinga2_caserver
   slurp:
     src: /var/lib/icinga2/ca/serial.txt
   register: ca_serial

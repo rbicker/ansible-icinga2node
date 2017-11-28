@@ -3,7 +3,7 @@
 icinga2_caserver: localhost
 icinga2_configserver: "{{ ansible_configserver }}"
 icinga2_node_zone: "{{ icinga2_node_endpoint }}"
-icinga2_node_endpoint: "{{ ansible_nodename }}"
+icinga2_node_endpoint: "{{ inventory_hostname }}"
 icinga2_node_sync_ca: false
 icinga2_node_global_zone: global-templates
 icinga2_node_local_conf: false
@@ -20,4 +20,6 @@ icinga2_cs_host_objectname: "{{ icinga2_node_endpoint }}"
 icinga2_cs_host_dir: /etc/icinga2/conf.d/hosts
 icinga2_cs_host_file: "{{ icinga2_node_endpoint }}.conf"
 icinga2_cs_service_reload: true
-icinga2_repo_url: https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
+icinga2_repo_icinga_install: yes
+icinga2_repo_epel_install: yes
+icinga2_repo_icinga_url: https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm

@@ -1,6 +1,6 @@
 object Host "{{ icinga2_cs_host_objectname }}" {
 {% if icinga2_cs_host_template  is defined %}
-  import "{{ icinga2_cs_host_template }}"
+  tabaseDatabase
 {% endif %}
 {% if icinga2_cs_host_display_name is defined %}
   display_name = "{{ icinga2_display_name }}"
