@@ -31,6 +31,7 @@ icinga2_node_salt: xxx # if set, ticket salt will be configured in constants.con
 icinga2_node_sync_ca: true # should /var/lib/icinga2/ca/ be synced to the node (for cluster setup) | DEFAULT: false
 icinga2_node_global_zone: # if set, a global zone with given name is configured | DEFAULT: "global-templates"
 icinga2_node_local_conf: true #if true, local configurations on the node will be loaded | DEFAULT: false
+icinga2_node_nagios_plugins: ['nagios-plugins-all'] # nagios plugins to install | DEFAULT: ['nagios-plugins-all']
 
 # parent zone / endpoint
 icinga2_parent_zone: master #name of the parent zone | DEFAULT: master
