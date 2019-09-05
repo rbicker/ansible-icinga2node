@@ -3,10 +3,10 @@ object Host "{{ icinga2_cs_host_objectname }}" {
   tabaseDatabase
 {% endif %}
 {% if icinga2_cs_host_display_name is defined %}
-  display_name = "{{ icinga2_display_name }}"
+  display_name = "{{ icinga2_cs_host_display_name }}"
 {% endif %}
 {% if icinga2_cs_host_notes is defined %}
-  notes = "{{ icinga2_display_name }}"
+  notes = "{{ icinga2_cs_host_notes }}"
 {% endif %}
 {% if icinga2_cs_host_check_command is defined %}
   check_command = "{{ icinga2_cs_host_check_command }}"
