@@ -68,7 +68,7 @@
 
 - name: ensure host config corresponds to template on {{ icinga2_configserver }}
   template:
-    force: "{{ icinga2_cs_host_replace}}"
+    force: "{{ icinga2_cs_host_replace }}"
     src: host.conf.j2
     dest: "{{ icinga2_cs_host_dir }}/{{ icinga2_cs_host_file }}"
     owner: icinga
@@ -76,4 +76,3 @@
   delegate_to: "{{ icinga2_configserver }}"
   when: icinga2_cs_host_add
   notify: "reload icinga2 server config"
-

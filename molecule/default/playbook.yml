@@ -1,0 +1,12 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    icinga2_node_sync_ca: no
+    icinga2_cs_host_add: no
+    icinga2_cs_endpoint_add: no
+    icinga2_generate_keypair: no
+    icinga2_node_service_restart: no
+    icinga2_parent_host: "test-parent-host"
+  roles:
+    - role: rbicker.icinga2node

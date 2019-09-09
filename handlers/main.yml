@@ -5,11 +5,13 @@
   service:
     name: icinga2
     state: restarted
+  when: icinga2_node_service_restart
 
 - name: windows node restart icinga2 service
   win_service:
     name: icinga2
     state: restarted
+  when: icinga2_node_service_restart
 
 - name: cs check icinga2 config
   listen: "reload icinga2 server config"

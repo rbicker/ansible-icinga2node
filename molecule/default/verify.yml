@@ -1,0 +1,12 @@
+---
+# verify
+- name: Verify
+  hosts: all
+  vars:
+    playground_rbi_quote: 'test-quote-xyz'
+    lin_base_path: /tmp/rbi
+    file_name: quote.txt
+  tasks:
+    - name: always true
+      assert:
+        that: true
