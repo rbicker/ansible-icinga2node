@@ -23,6 +23,13 @@
     name: icinga2
     enabled: true
 
+- name: ensure icinga2 service restarts on failure
+  lineinfile:
+    path: /usr/lib/systemd/system/icinga2.service
+    line: Restart=on-failure
+    insertafter: .*TimeoutStartSec.*
+  when: icinga2_restart_on_failure
+
 - name: ensure nagios-plugins are installed
   yum:
     name: "{{ icinga2_node_nagios_plugins }}"
