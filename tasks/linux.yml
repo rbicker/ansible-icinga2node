@@ -18,7 +18,7 @@
     disable_gpg_check: yes
     state: present
 
-- name: ensure icinga2 service restarts on failure if set
+- name: ensure icinga2 service restarts on failure
   blockinfile:
     path: /etc/systemd/system/icinga2.service.d/override.conf
     block: |
