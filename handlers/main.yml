@@ -1,6 +1,10 @@
 ---
 # handlers file for rbicker.icinga2node
 
+- name: linux daemon-reload
+  systemd:
+    daemon_reload: yes
+
 - name: linux node restart icinga2 service
   service:
     name: icinga2

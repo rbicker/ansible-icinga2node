@@ -18,24 +18,22 @@
     disable_gpg_check: yes
     state: present
 
+- name: ensure icinga2 service restarts on failure if set
+  blockinfile:
+    path: /etc/systemd/system/icinga2.service.d/override.conf
+    block: |
+          [Service]
+          Restart=on-failure
+    state: "{{ 'present' if icinga2_restart_on_failure else 'absent' }}"
+    create: yes
+  notify:
+    - linux daemon-reload
+    - linux node restart icinga2 service
+
 - name: ensure icinga2 service is enabled
   service:
     name: icinga2
     enabled: true
-
-- name: ensure icinga2 service restarts on failure if set
-  lineinfile:
-    path: /usr/lib/systemd/system/icinga2.service
-    line: Restart=on-failure
-    insertafter: .*TimeoutStartSec.*
-  when: icinga2_restart_on_failure
-
-- name: ensure icinga2 service doesn't restart on failure if set
-  lineinfile:
-    path: /usr/lib/systemd/system/icinga2.service
-    line: Restart=on-failure
-    state: absent
-  when: not icinga2_restart_on_failure
 
 - name: ensure nagios-plugins are installed
   yum:
