@@ -12,7 +12,7 @@
 
 - name: get keyfile stats
   win_stat:
-    path: "{{ icinga2_win_key_path }}"icinga2_win_crt_path
+    path: "{{ icinga2_win_key_path }}"
   register: icinga2_win_keyfile_stat
 
 - name: get trusted-master.crt stats
