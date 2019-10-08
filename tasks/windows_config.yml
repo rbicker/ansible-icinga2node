@@ -6,54 +6,51 @@
     icinga2_win_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key"
     icinga2_win_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt"
     icinga2_win_trusted_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt"
-    icinga2_win_ca_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
-    icinga2_win_ca_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
+    icinga2_win_ca_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\ca.key"
+    icinga2_win_ca_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\ca.crt"
     icinga2_win_constants_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\constants.conf"
 
 - name: get keyfile stats
   win_stat:
-    path: "{{ icinga2_win_key_path }}"
+    path: "{{ icinga2_win_key_path }}"icinga2_win_crt_path
   register: icinga2_win_keyfile_stat
 
-- name: icinga2 pki ticket generation on keyserver
+- name: get trusted-master.crt stats
+  win_stat:
+    path: "{{ icinga2_win_trusted_path }}"
+  register: icinga2_win_trusted_stat
+
+- name: icinga2 pki ticket generation on keyserver (icinga2 pki ticket)
   command: icinga2 pki ticket --cn "{{ icinga2_node_endpoint }}"
   delegate_to: "{{ icinga2_caserver  }}"
   register: icinga2_pki_ticket
   when: not icinga2_win_keyfile_stat.stat.exists
 
-- name: icinga2 pki new-cert
+- name: generate a new local self-signed certificate (icinga2 pki new-cert)
   win_shell: >-
     "{{ icinga2_exe_path }}"
-    pki new-cert --cn {{ icinga2_node_endpoint }}
+    pki new-cert
+    --cn {{ icinga2_node_endpoint }}
     --key {{ icinga2_win_key_path }}
+    --cert {{ icinga2_win_crt_path }}
   args:
     executable: cmd
   when: not icinga2_win_keyfile_stat.stat.exists
 
-- name: icinga2 pki save-cert
+
+- name: request master-certificate (icinga2 pki save-cert)
   win_shell: >-
     "{{ icinga2_exe_path }}"
-    pki save-cert --key {{ icinga2_win_key_path }}
+    pki save-cert 
+    --key {{ icinga2_win_key_path }}
+    --cert {{ icinga2_win_crt_path }}
     --trustedcert {{ icinga2_win_trusted_path }}
     --host {{ icinga2_parent_host }}
   args:
     executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists
+  when: not icinga2_win_trusted_stat.stat.exists
 
-- name: icinga2 pki request
-  win_shell: "\"{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe\" pki --cn {{ icinga2_node_endpoint }} --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }} --ticket {{ icinga2_pki_ticket.stdout }} --key {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key --cert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt --trustedcert {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt --ca {{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\ca.key"
-#  win_shell: >-
-#    "{{ icinga2_exe_path }}"
-#    pki request --cn {{ icinga2_node_endpoint }} --host {{ icinga2_parent_host }} --port {{ icinga2_parent_port }}
-#    --ticket {{ icinga2_pki_ticket.stdout }}
-#    --key {{ icinga2_win_key_path }} --cert {{ icinga2_win_crt_path }}
-#    --trustedcert {{ icinga2_win_trusted_path }}
-#    --ca {{ icinga2_win_ca_key_path }}
-  args:
-    executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists
-
-- name: icinga2 node setup
+- name: finish node setup (icinga2 node setup)
   win_shell: >-
     "{{ icinga2_exe_path }}"
     node setup --cn {{ icinga2_node_endpoint }} --endpoint {{ icinga2_parent_endpoint }}
@@ -64,7 +61,7 @@
     --accept-config --accept-commands
   args:
     executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists
+  when: not icinga2_win_keyfile_stat.stat.exists or not icinga2_win_trusted_stat.stat.exists
 
 - name: ensure NodeName constant is set
   win_lineinfile:
