@@ -3,6 +3,7 @@
 icinga2_caserver: localhost
 icinga2_configserver: "{{ ansible_configserver }}"
 icinga2_generate_keypair: yes
+icinga2_generate_keypair_force: no
 icinga2_install_only: no
 icinga2_node_zone: "{{ icinga2_node_endpoint }}"
 icinga2_node_endpoint: "{{ inventory_hostname }}"
