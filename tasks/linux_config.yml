@@ -81,7 +81,7 @@
   delegate_to: "{{ icinga2_caserver  }}"
   register: icinga2_pki_ticket
   when:
-    - not icinga2_pki_keyfile.stat.exists
+    - not icinga2_pki_keyfile.stat.exists or icinga2_generate_keypair_force
     - icinga2_generate_keypair
 
 - name: icinga2 pki new-cert
@@ -90,7 +90,7 @@
     --key /etc/icinga2/pki/{{ icinga2_node_endpoint }}.key
     --cert /etc/icinga2/pki/{{ icinga2_node_endpoint }}.crt
   when:
-    - not icinga2_pki_keyfile.stat.exists
+    - not icinga2_pki_keyfile.stat.exists or icinga2_generate_keypair_force
     - icinga2_generate_keypair
 
 - name: icinga2 pki save-cert
@@ -100,7 +100,7 @@
     --trustedcert /etc/icinga2/pki/trusted-master.crt
     --host {{ icinga2_parent_host }}
   when:
-    - not icinga2_pki_keyfile.stat.exists
+    - not icinga2_pki_keyfile.stat.exists or icinga2_generate_keypair_force
     - icinga2_generate_keypair
 
 - name: icinga2 pki request
@@ -110,7 +110,7 @@
     --cert /etc/icinga2/pki/{{ icinga2_node_endpoint }}.crt
     --trustedcert /etc/icinga2/pki/trusted-master.crt --ca /etc/icinga2/pki/ca.key
   when:
-    - not icinga2_pki_keyfile.stat.exists
+    - not icinga2_pki_keyfile.stat.exists or icinga2_generate_keypair_force
     - icinga2_generate_keypair
 
 - name: icinga2 node setup
@@ -120,7 +120,7 @@
     --trustedcert /etc/icinga2/pki/trusted-master.crt
     --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands
   when:
-    - not icinga2_pki_keyfile.stat.exists
+    - not icinga2_pki_keyfile.stat.exists or icinga2_generate_keypair_force
     - icinga2_generate_keypair
 
 - name: ensure icinga2 features are enabled

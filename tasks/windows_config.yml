@@ -24,7 +24,7 @@
   command: icinga2 pki ticket --cn "{{ icinga2_node_endpoint }}"
   delegate_to: "{{ icinga2_caserver  }}"
   register: icinga2_pki_ticket
-  when: not icinga2_win_keyfile_stat.stat.exists
+  when: not icinga2_win_keyfile_stat.stat.exists or icinga2_generate_keypair_force
 
 - name: generate a new local self-signed certificate (icinga2 pki new-cert)
   win_shell: >-
@@ -35,20 +35,20 @@
     --cert {{ icinga2_win_crt_path }}
   args:
     executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists
+  when: not icinga2_win_keyfile_stat.stat.exists or icinga2_generate_keypair_force
 
 
 - name: request master-certificate (icinga2 pki save-cert)
   win_shell: >-
     "{{ icinga2_exe_path }}"
-    pki save-cert 
+    pki save-cert
     --key {{ icinga2_win_key_path }}
     --cert {{ icinga2_win_crt_path }}
     --trustedcert {{ icinga2_win_trusted_path }}
     --host {{ icinga2_parent_host }}
   args:
     executable: cmd
-  when: not icinga2_win_trusted_stat.stat.exists
+  when: not icinga2_win_trusted_stat.stat.exists or icinga2_generate_keypair_force
 
 - name: finish node setup (icinga2 node setup)
   win_shell: >-
@@ -61,7 +61,7 @@
     --accept-config --accept-commands
   args:
     executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists or not icinga2_win_trusted_stat.stat.exists
+  when: not icinga2_win_keyfile_stat.stat.exists or not icinga2_win_trusted_stat.stat.exists or icinga2_generate_keypair_force
 
 - name: ensure NodeName constant is set
   win_lineinfile:
