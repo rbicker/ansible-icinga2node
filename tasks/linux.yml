@@ -11,6 +11,8 @@
     name: epel-release
     state: present
   when: icinga2_node_repo_epel_install
+  tags:
+    - molecule-idempotence-notest
 
 - name: ensure icinga2 is installed
   yum:
