@@ -4,7 +4,7 @@
 - name: ensure icinga2 is installed (using chocolatey)
   win_chocolatey:
     name: icinga2
-    state: latest
+    state: latest  # noqa 403
   register: icinga2_win_install
 
 - name: ensure service user is configured
