@@ -16,7 +16,7 @@
   yum:
     name: icinga2
     disable_gpg_check: yes
-    state: present
+    state: latest
 
 - name: ensure icinga2 service restarts on failure
   blockinfile:
@@ -38,7 +38,7 @@
 - name: ensure nagios-plugins are installed
   yum:
     name: "{{ icinga2_node_nagios_plugins }}"
-    state: present
+    state: latest
 
 - name: ensure rpcbind.socket is disabled
   systemd:

@@ -8,5 +8,6 @@
     icinga2_generate_keypair: no
     icinga2_node_service_restart: no
     icinga2_parent_host: "test-parent-host"
+    icinga2_node_nagios_plugins: [nagios-plugins]
   roles:
     - role: rbicker.icinga2node
