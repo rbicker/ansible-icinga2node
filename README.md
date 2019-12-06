@@ -27,6 +27,7 @@ icinga2_caserver: localhost #icinga2 server generating the pki ticket | DEFAULT:
 # global configuration
 icinga2_install_only: no #should only a installation  (without configuration) be performed? | DEFAULT: no
 icinga2_generate_keypair: yes #should a keypair be generated (disable for testing) | DEFAULT: yes
+icinga2_chocolatey_source: https://example.ch/nuget/chocolatey/ # custom source for icinga2 nuget packet | DEFAULT: omit
 
 # node configuration
 icinga2_node_zone: client01.example.com  #ZoneName in constants.conf | DEFAULT: {{ icinga2_node_endpoint }}

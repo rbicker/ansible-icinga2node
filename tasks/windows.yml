@@ -5,6 +5,7 @@
   win_chocolatey:
     name: icinga2
     state: latest  # noqa 403
+    source:  "{{ icinga2_chocolatey_source | default(omit) }}"
   register: icinga2_win_install
 
 - name: ensure service user is configured
