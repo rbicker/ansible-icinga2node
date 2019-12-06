@@ -11,12 +11,14 @@
     name: epel-release
     state: present
   when: icinga2_node_repo_epel_install
+  tags:
+    - molecule-idempotence-notest
 
 - name: ensure icinga2 is installed
   yum:
     name: icinga2
     disable_gpg_check: yes
-    state: present
+    state: latest  # noqa 403
 
 - name: ensure icinga2 service restarts on failure
   blockinfile:
@@ -38,7 +40,7 @@
 - name: ensure nagios-plugins are installed
   yum:
     name: "{{ icinga2_node_nagios_plugins }}"
-    state: present
+    state: latest  # noqa 403
 
 - name: ensure rpcbind.socket is disabled
   systemd:
