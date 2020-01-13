@@ -1,6 +1,14 @@
 ---
 # tasks for windows hosts
 
+- name: check if parent host's icinga port is reachable
+  win_wait_for:
+    host: "{{ icinga2_parent_host }}"
+    port: "{{ icinga2_parent_port }}"
+    state: started
+    delay: 0
+    timeout: 10
+
 - name: ensure chocolatey is installed
   win_chocolatey:
     name: chocolatey

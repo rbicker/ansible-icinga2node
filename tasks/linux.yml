@@ -1,6 +1,14 @@
 ---
 # tasks for linux hosts
 
+- name: check if parent host's icinga port is reachable
+  wait_for:
+    host: "{{ icinga2_parent_host }}"
+    port: "{{ icinga2_parent_port }}"
+    state: started
+    delay: 0
+    timeout: 10
+
 - name: ensure icinga2 repository is installed
   yum:
     name: "{{ icinga2_repo_icinga_url }}"
