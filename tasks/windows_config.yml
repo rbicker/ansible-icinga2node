@@ -7,7 +7,7 @@
 
 - name: set path-facts
   set_fact:
-    icinga2_exe_path: "{{ icinga2_win_pathname.split('\"')[1] }}"
+    icinga2_exe_path: "{{ icinga2_win_pathname.stdout.split('\"')[1] }}"
     icinga2_win_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key"
     icinga2_win_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt"
     icinga2_win_trusted_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt"
