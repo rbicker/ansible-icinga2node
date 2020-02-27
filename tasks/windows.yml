@@ -17,7 +17,8 @@
   win_chocolatey:
     name: icinga2
     state: latest  # noqa 403
-    source:  "{{ icinga2_chocolatey_source | default(omit) }}"
+    source: "{{ icinga2_chocolatey_source | default(omit) }}"
+    version: "{{ icinga2_chocolatey_version | default(omit) }}"
   register: icinga2_win_install
 
 - name: ensure service user is configured
