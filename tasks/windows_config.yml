@@ -1,8 +1,13 @@
 ---
 # windows configuration
+
+- name: find icinga2.exe path
+  win_shell: "(Get-WmiObject win32_service | ?{$_.Name -like '*icinga*'} | select PathName).PathName"
+  register: icinga2_win_pathname
+
 - name: set path-facts
   set_fact:
-    icinga2_exe_path: "{{ ansible_env.ProgramFiles }}\\ICINGA2\\sbin\\icinga2.exe"
+    icinga2_exe_path: "{{ icinga2_win_pathname.split('\"')[1] }}"
     icinga2_win_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key"
     icinga2_win_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt"
     icinga2_win_trusted_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt"
