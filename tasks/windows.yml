@@ -24,7 +24,6 @@
 - name: ensure service user is configured
   win_service:
     name: icinga2
-    state: present
     username: "{{ icinga2_node_service_username }}"
     password: "{{ icinga2_node_service_password }}"
   when: icinga2_node_service_username is defined
