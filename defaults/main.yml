@@ -11,6 +11,7 @@ icinga2_node_global_zone: global-templates
 icinga2_node_features: [api, checker, mainlog]
 icinga2_node_nagios_plugins: [nagios-plugins-all]
 icinga2_node_service_password: ""
+icinga2_node_service_delayed: no
 icinga2_node_local_conf: no
 icinga2_node_sync_ca: no
 icinga2_node_service_restart: yes

@@ -40,6 +40,7 @@ icinga2_node_service_restart: yes #should the service be restarted on node | DEF
 icinga2_node_nagios_plugins: ['nagios-plugins-all'] #nagios plugins to install | DEFAULT: ['nagios-plugins-all']
 icinga2_node_service_username: ".\\Administrator" #username for icinga service on windows hosts | DEFAULT: undefined
 icinga2_node_service_password: "MySecret" #username for icinga service on windows hosts | DEFAULT: ""
+icinga2_node_service_delayed: yes #start icinga2 service in delayed mode on windows | DEFAULT: no
 
 # parent zone / endpoint
 icinga2_parent_zone: master #name of the parent zone | DEFAULT: master

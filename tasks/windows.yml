@@ -30,6 +30,12 @@
   when: icinga2_node_service_username is defined
   notify: windows node restart icinga2 service
 
+- name: ensure service is delayed
+  win_service:
+    name: icinga2
+    start_mode: delayed
+  when: icinga2_node_service_delayed
+
 - name: configuration
   include_tasks: windows_config.yml
   when: not icinga2_install_only
