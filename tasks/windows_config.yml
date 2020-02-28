@@ -66,7 +66,7 @@
     --accept-config --accept-commands
   args:
     executable: cmd
-  when: not icinga2_win_keyfile_stat.stat.exists or not icinga2_win_trusted_stat.stat.exists or icinga2_generate_keypair_force
+  when: not icinga2_win_keyfile_stat.stat.exists or icinga2_generate_keypair_force
 
 - name: ensure NodeName constant is set
   win_lineinfile:
