@@ -12,6 +12,7 @@
 - name: ensure chocolatey is installed
   win_chocolatey:
     name: chocolatey
+    source: "{{ icinga2_chocolatey_source | default(omit) }}"
 
 - name: ensure icinga2 is installed (using chocolatey)
   win_chocolatey:
