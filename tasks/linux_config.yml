@@ -115,7 +115,7 @@
 
 - name: icinga2 node setup
   command: >-
-    icinga2 node setup --endpoint {{ icinga2_parent_endpoint }}
+    icinga2 node setup --endpoint {{ icinga2_parent_endpoint }} --cn {{ icinga2_node_endpoint }}
     --parent_host {{ icinga2_parent_host }},{{ icinga2_parent_port }}
     --trustedcert /etc/icinga2/pki/trusted-master.crt
     --ticket {{ icinga2_pki_ticket.stdout }} --zone {{ icinga2_parent_zone }} --accept-config --accept-commands
