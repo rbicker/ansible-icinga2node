@@ -1,12 +1,24 @@
 ---
 # linux icinga2 configuration
-- name: ensure /usr/lib64/nagios/plugins/* is owned by icinga:icinga
-  file:
-    path: /usr/lib64/nagios/plugins
-    owner: icinga
-    group: icinga
-    state: directory
-    recurse: true
+
+#
+# this was removed as it might break when updating nagios plugins
+# it might be better to add the icinga user to the nagios group
+# (see task below)
+# 
+#- name: ensure /usr/lib64/nagios/plugins/* is owned by icinga:icinga
+#  file:
+#    path: /usr/lib64/nagios/plugins
+#    owner: icinga
+#    group: icinga
+#    state: directory
+#    recurse: true
+
+- name: ensure icinga user is member of the nagios group
+  user:
+    name: icinga
+    groups: nagios
+    append: yes
 
 - name: ensure directory /var/lib/icinga2/ca is present
   file:
