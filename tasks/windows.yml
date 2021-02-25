@@ -16,6 +16,9 @@
     source: "{{ icinga2_chocolatey_source | default(omit) }}"
     version: "{{ icinga2_chocolatey_version | default(omit) }}"
   register: icinga2_win_install
+  retries: "{{ icinga2_chocolatey_retries }}"
+  delay: "{{ icinga2_chocolatey_delay }}"
+  until: icinga2_win_install is not failed
 
 - name: ensure service user is configured
   win_service:
