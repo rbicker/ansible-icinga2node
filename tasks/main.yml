@@ -23,8 +23,7 @@
   when: icinga2_node_sync_ca
 
 - include: "linux.yml"
-  when: (ansible_os_family == "RedHat")
-        # or (ansible_os_family == "Debian")
+  when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
 
 - include: "windows.yml"
   when: (ansible_os_family == "Windows")
