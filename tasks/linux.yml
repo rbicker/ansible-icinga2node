@@ -9,24 +9,46 @@
     delay: 0
     timeout: 10
 
-- name: ensure icinga2 repository is installed
-  yum:
-    name: "{{ icinga2_repo_icinga_url }}"
-  when: icinga2_node_repo_icinga_install
+- name: Install Icinga2 (RedHat)
+  when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
+  block:
+  - name: ensure icinga2 repository is installed
+    yum:
+      name: "{{ icinga2_repo_icinga_url }}"
+    when: icinga2_node_repo_icinga_install
 
-- name: ensure epel-release is installed
-  yum:
-    name: epel-release
-    state: present
-  when: icinga2_node_repo_epel_install
-  tags:
-    - molecule-idempotence-notest
+  - name: ensure epel-release is installed
+    yum:
+      name: epel-release
+      state: present
+    when: icinga2_node_repo_epel_install
+    tags:
+      - molecule-idempotence-notest
 
-- name: ensure icinga2 is installed
-  yum:
-    name: icinga2
-    disable_gpg_check: yes
-    state: latest  # noqa 403
+  - name: ensure icinga2 is installed (RedHat)
+    yum:
+      name: icinga2
+      disable_gpg_check: yes
+      state: latest  # noqa 403
+
+  - name: ensure nagios-plugins are installed (RedHat)
+    yum:
+      name: "{{ icinga2_node_nagios_plugins_rh }}"
+      state: latest  # noqa 403
+
+
+- name: Install Icinga2 (Debian)
+  when: ansible_os_family == "Debian"
+  block:
+  - name: ensure icinga2 is installed (Debian)
+    apt:
+      name: icinga2
+      state: latest  # noqa 403
+
+  - name: ensure nagios-plugins are installed (Debian)
+    apt:
+      name: "{{ icinga2_node_nagios_plugins_deb }}"
+      state: latest  # noqa 403
 
 - name: ensure icinga2 service restarts on failure
   blockinfile:
@@ -44,11 +66,6 @@
   service:
     name: icinga2
     enabled: true
-
-- name: ensure nagios-plugins are installed
-  yum:
-    name: "{{ icinga2_node_nagios_plugins }}"
-    state: latest  # noqa 403
 
 - name: ensure rpcbind.socket is disabled
   systemd:

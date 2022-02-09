@@ -9,7 +9,8 @@ icinga2_node_zone: "{{ icinga2_node_endpoint }}"
 icinga2_node_endpoint: "{{ inventory_hostname }}"
 icinga2_node_global_zone: global-templates
 icinga2_node_features: [api, checker, mainlog]
-icinga2_node_nagios_plugins: [nagios-plugins-all]
+icinga2_node_nagios_plugins_rh: [nagios-plugins-all]
+icinga2_node_nagios_plugins_deb: [nagios-plugins-contrib]
 icinga2_node_service_password: ""
 icinga2_node_service_delayed: no
 icinga2_node_local_conf: no
