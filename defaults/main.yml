@@ -18,6 +18,8 @@ icinga2_node_sync_ca: no
 icinga2_node_service_restart: yes
 icinga2_node_repo_icinga_install: yes
 icinga2_node_repo_epel_install: yes
+icinga2_node_owner:  "{% if ansible_os_family == 'Debian' %}nagios{% else %}icinga{% endif %}"
+icinga2_node_group:  "{% if ansible_os_family == 'Debian' %}nagios{% else %}icinga{% endif %}"
 icinga2_chocolatey_retries: 5
 icinga2_chocolatey_delay: 10
 icinga2_restart_on_failure: yes

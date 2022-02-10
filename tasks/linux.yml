@@ -44,11 +44,25 @@
     apt:
       name: icinga2
       state: latest  # noqa 403
+      cache_valid_time: 86400
 
   - name: ensure nagios-plugins are installed (Debian)
     apt:
       name: "{{ icinga2_node_nagios_plugins_deb }}"
       state: latest  # noqa 403
+      cache_valid_time: 86400
+
+  - name: Ensure ownership of /etc/icinga2 subdirs
+    # Ubuntu and Debian install everything as owned by root:root, which prevents all
+    # the automation later. Reported to Debian in 2016 at
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=824482,
+    # apparently still a problem on Ubuntu in 2022.
+    file:
+      state: directory
+      path: /etc/icinga2
+      recurse: yes
+      owner: "{{ icinga2_node_owner }}"
+      group: "{{ icinga2_node_group }}"
 
 - name: ensure icinga2 service restarts on failure
   blockinfile:
