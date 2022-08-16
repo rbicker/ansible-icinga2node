@@ -15,6 +15,7 @@
   - name: ensure icinga2 repository is installed
     yum:
       name: "{{ icinga2_repo_icinga_url }}"
+      disable_gpg_check: yes
     when: icinga2_node_repo_icinga_install
 
   - name: ensure epel-release is installed
@@ -44,7 +45,7 @@
     apt:
       name: icinga2
       state: latest  # noqa 403
-      cache_valid_time: 86400
+      update_cache: yes
 
   - name: ensure nagios-plugins are installed (Debian)
     apt:
