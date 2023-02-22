@@ -7,7 +7,7 @@
 
 - name: set path-facts
   set_fact:
-    icinga2_exe_path: "{{ icinga2_win_pathname.stdout.split('\"')[1] }}"
+    icinga2_exe_path: '{{ icinga2_win_pathname.stdout.split(''"'')[1] }}'
     icinga2_win_key_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.key"
     icinga2_win_crt_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\{{ icinga2_node_endpoint }}.crt"
     icinga2_win_trusted_path: "{{ ansible_env.ProgramData }}\\icinga2\\etc\\icinga2\\pki\\trusted-master.crt"
@@ -42,7 +42,6 @@
     executable: cmd
   when: not icinga2_win_keyfile_stat.stat.exists or icinga2_generate_keypair_force
 
-
 - name: request master-certificate (icinga2 pki save-cert)
   win_shell: >-
     "{{ icinga2_exe_path }}"
@@ -71,19 +70,19 @@
 - name: ensure NodeName constant is set
   win_lineinfile:
     regexp: "^const NodeName"
-    line: "const NodeName = \"{{ icinga2_node_endpoint }}\""
+    line: 'const NodeName = "{{ icinga2_node_endpoint }}"'
     path: "{{ icinga2_win_constants_path }}"
 
 - name: ensure ZoneName constant is set
   win_lineinfile:
     regexp: "^const ZoneName"
-    line: "const ZoneName = \"{{ icinga2_node_zone }}\""
+    line: 'const ZoneName = "{{ icinga2_node_zone }}"'
     path: "{{ icinga2_win_constants_path }}"
 
 - name: ensure TicketSalt constant is set
   win_lineinfile:
     regexp: "^const TicketSalt"
-    line: "const TicketSalt = \"{{ icinga2_node_salt }}\""
+    line: 'const TicketSalt = "{{ icinga2_node_salt }}"'
     path: "{{ icinga2_win_constants_path }}"
   when: icinga2_node_salt is defined
 
@@ -118,3 +117,50 @@
     content: "{{ ca_serial['content'] | b64decode }}"
     dest: "{{ ansible_env.ProgramData }}\\icinga2\\var\\lib\\icinga2\\serial.txt"
   when: icinga2_node_sync_ca
+
+- name: list icinga2 features
+  win_shell: >-
+    "{{ icinga2_exe_path }}"
+    features list
+  args:
+    executable: cmd
+  changed_when: no
+  register: icinga2_features
+  tags:
+    - features
+
+- name: create list of features to enable
+  set_fact:
+    # create a list of all features that are listed as disabled but configured as enabled
+    icinga2_enable_features: "{{ item | regex_replace('^Disabled features:\\s*', '') | split(' ') | intersect(icinga2_node_features) }}"
+  when: item | regex_search('^Disabled features:')
+  with_items: "{{ icinga2_features.stdout_lines }}"
+  tags:
+    - features
+
+- name: create list of features to disable
+  set_fact:
+    # create a list of all features that are listed as enabled but configured as disabled
+    icinga2_disable_features: "{{ item | regex_replace('^Enabled features:\\s*', '') | split(' ') | intersect(icinga2_node_features_disable) }}"
+  when: item | regex_search('^Enabled features:')
+  with_items: "{{ icinga2_features.stdout_lines }}"
+  tags:
+    - features
+
+- name: enable features
+  win_shell: >-
+    "{{ icinga2_exe_path }}"
+    features enable {{ icinga2_enable_features | join(' ')  }}
+  when: icinga2_enable_features | length > 0
+  notify: windows node restart icinga2 service
+  tags:
+    - features
+
+- name: disable features
+  win_shell: >-
+    "{{ icinga2_exe_path }}"
+    features disable {{ icinga2_disable_features | join(' ')  }}
+  when: icinga2_disable_features | length > 0
+  notify: windows node restart icinga2 service
+  tags:
+    - features

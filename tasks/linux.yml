@@ -26,14 +26,14 @@
   yum:
     name: icinga2
     disable_gpg_check: yes
-    state: latest  # noqa 403
+    state: latest # noqa 403
 
 - name: ensure icinga2 service restarts on failure
   blockinfile:
     path: /etc/systemd/system/icinga2.service.d/override.conf
     block: |
-          [Service]
-          Restart=on-failure
+      [Service]
+      Restart=on-failure
     state: "{{ 'present' if icinga2_restart_on_failure else 'absent' }}"
     create: yes
   notify:
@@ -48,11 +48,11 @@
 - name: ensure nagios-plugins are installed
   yum:
     name: "{{ icinga2_node_nagios_plugins }}"
-    state: latest  # noqa 403
+    state: latest # noqa 403
 
 - name: ensure rpcbind.socket is disabled
   systemd:
-    name: '{{ item }}'
+    name: "{{ item }}"
     enabled: false
     state: stopped
   with_items:
@@ -63,3 +63,5 @@
 - name: configuration
   include_tasks: linux_config.yml
   when: not icinga2_install_only
+  tags:
+    - always

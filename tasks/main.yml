@@ -24,9 +24,13 @@
 
 - include: "linux.yml"
   when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
+  tags:
+    - always
 
 - include: "windows.yml"
   when: (ansible_os_family == "Windows")
+  tags:
+    - always
 
 - name: ensure endpoint directory is present on configserver
   file:

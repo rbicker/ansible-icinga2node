@@ -5,7 +5,7 @@
 # this was removed as it might break when updating nagios plugins
 # it might be better to add the icinga user to the nagios group
 # (see task below)
-# 
+#
 #- name: ensure /usr/lib64/nagios/plugins/* is owned by icinga:icinga
 #  file:
 #    path: /usr/lib64/nagios/plugins
@@ -138,12 +138,23 @@
 - name: ensure icinga2 features are enabled
   file:
     src: "/etc/icinga2/features-available/{{ item }}.conf"
-    dest: "/etc/icinga2/features-enabled/{{ item }}.conf"
+    path: "/etc/icinga2/features-enabled/{{ item }}.conf"
     owner: icinga
     group: icinga
     state: link
   with_items: "{{ icinga2_node_features }}"
   notify: linux node restart icinga2 service
+  tags:
+    - features
+
+- name: ensure icinga2 features are disabled
+  file:
+    path: "/etc/icinga2/features-enabled/{{ item }}.conf"
+    state: absent
+  with_items: "{{ icinga2_node_features_disable }}"
+  notify: linux node restart icinga2 service
+  tags:
+    - features
 
 - name: ensure icinga2.conf corresponds to template
   template:
@@ -164,18 +175,18 @@
 - name: ensure NodeName constant is set
   lineinfile:
     regexp: "^const NodeName"
-    line: "const NodeName = \"{{ icinga2_node_endpoint }}\""
+    line: 'const NodeName = "{{ icinga2_node_endpoint }}"'
     path: /etc/icinga2/constants.conf
 
 - name: ensure ZoneName constant is set
   lineinfile:
     regexp: "^const ZoneName"
-    line: "const ZoneName = \"{{ icinga2_node_zone }}\""
+    line: 'const ZoneName = "{{ icinga2_node_zone }}"'
     path: /etc/icinga2/constants.conf
 
 - name: ensure TicketSalt constant is set
   lineinfile:
     regexp: "^const TicketSalt"
-    line: "const TicketSalt = \"{{ icinga2_node_salt }}\""
+    line: 'const TicketSalt = "{{ icinga2_node_salt }}"'
     path: /etc/icinga2/constants.conf
   when: icinga2_node_salt is defined

@@ -12,7 +12,7 @@
 - name: ensure icinga2 is installed (using chocolatey)
   win_chocolatey:
     name: icinga2
-    state: latest  # noqa 403
+    state: latest # noqa 403
     source: "{{ icinga2_chocolatey_source | default(omit) }}"
     version: "{{ icinga2_chocolatey_version | default(omit) }}"
   register: icinga2_win_install
@@ -39,3 +39,5 @@
 - name: configuration
   include_tasks: windows_config.yml
   when: not icinga2_install_only
+  tags:
+    - always
