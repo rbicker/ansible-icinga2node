@@ -64,6 +64,7 @@ icinga2_cs_host_template: "generic-host-template #value for template to import i
 icinga2_cs_host_display_name: "My Appserver" #value for display_name in host config | DEFAULT: undefined
 icinga2_cs_host_notes "Owner: Hans Muster" #value for notes in host config | DEFAULT: undefined
 icinga2_cs_host_custom_block: "" #custom block to include in host config | DEFAULT: undefined
+icinga2_cs_host_groups: #array of vars to include in groups via `groups +=` | DEFAULT: undefined
 icinga2_cs_host_vars: #array of vars to include in host config | DEFAULT: undefined
  - os: windows
  - role: dc
