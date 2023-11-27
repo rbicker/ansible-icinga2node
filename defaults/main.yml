@@ -9,7 +9,8 @@ icinga2_node_zone: "{{ icinga2_node_endpoint }}"
 icinga2_node_endpoint: "{{ inventory_hostname }}"
 icinga2_node_global_zone: global-templates
 icinga2_node_features: [api, checker, mainlog]
-icinga2_node_nagios_plugins: [nagios-plugins-all]
+icinga2_node_nagios_plugins_rh: [nagios-plugins-all]
+icinga2_node_nagios_plugins_deb: [nagios-plugins-contrib]
 icinga2_node_service_password: ""
 icinga2_node_service_delayed: no
 icinga2_node_local_conf: no
@@ -17,6 +18,8 @@ icinga2_node_sync_ca: no
 icinga2_node_service_restart: yes
 icinga2_node_repo_icinga_install: yes
 icinga2_node_repo_epel_install: yes
+icinga2_node_owner:  "{% if ansible_os_family == 'Debian' %}nagios{% else %}icinga{% endif %}"
+icinga2_node_group:  "{% if ansible_os_family == 'Debian' %}nagios{% else %}icinga{% endif %}"
 icinga2_chocolatey_retries: 5
 icinga2_chocolatey_delay: 10
 icinga2_restart_on_failure: yes

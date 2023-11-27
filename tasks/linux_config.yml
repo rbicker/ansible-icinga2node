@@ -9,8 +9,8 @@
 #- name: ensure /usr/lib64/nagios/plugins/* is owned by icinga:icinga
 #  file:
 #    path: /usr/lib64/nagios/plugins
-#    owner: icinga
-#    group: icinga
+#    owner: "{{ icinga2_node_owner }}"
+#    group: "{{ icinga2_node_group }}"
 #    state: directory
 #    recurse: true
 
@@ -19,13 +19,14 @@
     name: icinga
     groups: nagios
     append: yes
+  when: not ansible_os_family == "Debian"
 
 - name: ensure directory /var/lib/icinga2/ca is present
   file:
     path: /var/lib/icinga2/ca
     state: directory
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
   when: icinga2_node_sync_ca
 
 - name: get /var/lib/icinga2/ca/ca.crt contents from caserver
@@ -53,8 +54,8 @@
   copy:
     content: "{{ ca_crt['content'] | b64decode }}"
     dest: /var/lib/icinga2/ca/ca.crt
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
     mode: 0644
   when: icinga2_node_sync_ca
 
@@ -62,8 +63,8 @@
   copy:
     content: "{{ ca_key['content'] | b64decode }}"
     dest: /var/lib/icinga2/ca/ca.key
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
     mode: 0600
   when: icinga2_node_sync_ca
 
@@ -71,8 +72,8 @@
   copy:
     content: "{{ ca_serial['content'] | b64decode }}"
     dest: /var/lib/icinga2/ca/serial.txt
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
     mode: 0644
   when: icinga2_node_sync_ca
 
@@ -80,8 +81,8 @@
   file:
     path: /etc/icinga2/pki
     state: directory
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
 
 - name: check if pki key already exists
   stat:
@@ -139,8 +140,8 @@
   file:
     src: "/etc/icinga2/features-available/{{ item }}.conf"
     dest: "/etc/icinga2/features-enabled/{{ item }}.conf"
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
     state: link
   with_items: "{{ icinga2_node_features }}"
   notify: linux node restart icinga2 service
@@ -149,16 +150,16 @@
   template:
     src: icinga2.conf.j2
     dest: /etc/icinga2/icinga2.conf
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
   notify: linux node restart icinga2 service
 
 - name: ensure zones.conf corresponds to template
   template:
     src: zones.conf.j2
     dest: /etc/icinga2/zones.conf
-    owner: icinga
-    group: icinga
+    owner: "{{ icinga2_node_owner }}"
+    group: "{{ icinga2_node_group }}"
   notify: linux node restart icinga2 service
 
 - name: ensure NodeName constant is set
