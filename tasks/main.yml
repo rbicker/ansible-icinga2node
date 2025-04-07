@@ -70,7 +70,7 @@
   delegate_to: "{{ icinga2_configserver }}"
   when: icinga2_cs_host_add
 
-- name: ensure host config corresponds to template on {{ icinga2_configserver }}
+- name: ensure host config corresponds to template on configserver
   throttle: "{{ icinga2_cs_host_throttle is defined | ternary(icinga2_cs_host_throttle, omit) }}"
   template:
     force: "{{ icinga2_cs_host_replace }}"
