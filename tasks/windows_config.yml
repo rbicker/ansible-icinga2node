@@ -151,7 +151,9 @@
   win_shell: >-
     "{{ icinga2_exe_path }}"
     features enable {{ icinga2_enable_features | join(' ')  }}
-  when: icinga2_enable_features | length > 0
+  when:
+    - icinga2_enable_features is defined
+    - icinga2_enable_features | length > 0
   notify: windows node restart icinga2 service
   tags:
     - features
@@ -160,7 +162,9 @@
   win_shell: >-
     "{{ icinga2_exe_path }}"
     features disable {{ icinga2_disable_features | join(' ')  }}
-  when: icinga2_disable_features | length > 0
+  when:
+    - icinga2_disable_features is defined
+    - icinga2_disable_features | length > 0
   notify: windows node restart icinga2 service
   tags:
     - features
