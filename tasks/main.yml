@@ -42,10 +42,10 @@
   when: icinga2_cs_endpoint_add
 
 - name: ensure endpoint configuration exists on configserver
+  throttle: "{{ icinga2_cs_endpoint_throttle is defined | ternary(icinga2_cs_endpoint_throttle, omit) }}"
   blockinfile:
     name: "{{ icinga2_cs_endpoint_dir }}/{{ icinga2_cs_endpoint_file }}"
     create: yes
-    throttle: "{{ icinga2_cs_endpoint_throttle is defined | ternary(icinga2_cs_endpoint_throttle, omit) }}"
     owner: icinga
     group: icinga
     marker: "// ansible {{ icinga2_node_endpoint }} {mark}"
@@ -71,11 +71,11 @@
   when: icinga2_cs_host_add
 
 - name: ensure host config corresponds to template on {{ icinga2_configserver }}
+  throttle: "{{ icinga2_cs_host_throttle is defined | ternary(icinga2_cs_host_throttle, omit) }}"
   template:
     force: "{{ icinga2_cs_host_replace }}"
     src: host.conf.j2
     dest: "{{ icinga2_cs_host_dir }}/{{ icinga2_cs_host_file }}"
-    throttle: "{{ icinga2_cs_host_throttle is defined | ternary(icinga2_cs_host_throttle, omit) }}"
     owner: icinga
     group: icinga
   delegate_to: "{{ icinga2_configserver }}"
