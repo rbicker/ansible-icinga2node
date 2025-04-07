@@ -4,6 +4,7 @@
 - name: find icinga2.exe path
   win_shell: "(Get-WmiObject win32_service | ?{$_.Name -like '*icinga*'} | select PathName).PathName"
   register: icinga2_win_pathname
+  changed_when: no
 
 - name: set path-facts
   set_fact:

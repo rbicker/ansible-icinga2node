@@ -34,3 +34,5 @@ icinga2_cs_host_replace: no
 icinga2_cs_service_reload: yes
 icinga2_cs_endpoint_add: yes
 icinga2_repo_icinga_url: https://packages.icinga.com/epel/7/release/noarch/icinga-rpm-release-7-1.el7.centos.noarch.rpm
+icinga2_cs_endpoint_throttle: 0
+icinga2_cs_host_throttle: 0

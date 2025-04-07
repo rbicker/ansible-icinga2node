@@ -22,12 +22,12 @@
   delegate_to: "{{ icinga2_caserver  }}"
   when: icinga2_node_sync_ca
 
-- include: "linux.yml"
+- include_tasks: "linux.yml"
   when: ansible_os_family == "RedHat" or ansible_os_family == "Rocky"
   tags:
     - always
 
-- include: "windows.yml"
+- include_tasks: "windows.yml"
   when: (ansible_os_family == "Windows")
   tags:
     - always
@@ -42,7 +42,7 @@
   when: icinga2_cs_endpoint_add
 
 - name: ensure endpoint configuration exists on configserver
-  throttle: "{{ icinga2_cs_endpoint_throttle is defined | ternary((icinga2_cs_endpoint_throttle | int), omit) }}"
+  throttle: "{{ icinga2_cs_endpoint_throttle }}"
   blockinfile:
     name: "{{ icinga2_cs_endpoint_dir }}/{{ icinga2_cs_endpoint_file }}"
     create: yes
@@ -71,7 +71,7 @@
   when: icinga2_cs_host_add
 
 - name: ensure host config corresponds to template on configserver
-  throttle: "{{ icinga2_cs_host_throttle is defined | ternary((icinga2_cs_host_throttle | int ), omit) }}"
+  throttle: "{{ icinga2_cs_host_throttle }}"
   template:
     force: "{{ icinga2_cs_host_replace }}"
     src: host.conf.j2
